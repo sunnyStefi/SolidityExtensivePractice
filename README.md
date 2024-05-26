@@ -1,4 +1,4 @@
-# Extensive Solidity Practice contracts
+# Extensive Practice - Solidity lang
 
 ### Summary
 This project provides an in-depth exploration of Solidity features and nuances. It tests a wide range of cases and combinations to make a comprehensive collection of how most of Solidity elements function.
