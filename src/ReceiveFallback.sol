@@ -9,6 +9,10 @@ contract Receive {
         number = 1;
         // emit Event(number, "Test event");
     }
+
+    function setNumber(uint256 _number) public {
+        number = _number;
+    }
 }
 
 contract FallbackNotPayable {
@@ -16,6 +20,10 @@ contract FallbackNotPayable {
 
     fallback() external {
         number = 2;
+    }
+
+    function setNumber(uint256 _number) public {
+        number = _number;
     }
 }
 
@@ -36,6 +44,10 @@ contract FallbackPayable {
     fallback() external payable {
         number = 3;
     }
+
+    function setNumber(uint256 _number) public {
+        number = _number;
+    }
 }
 
 contract ReceiveNotPayableFallback {
@@ -45,8 +57,12 @@ contract ReceiveNotPayableFallback {
         number = 4;
     }
 
-    fallback() external  {
+    fallback() external {
         number = 5;
+    }
+
+    function setNumber(uint256 _number) public {
+        number = _number;
     }
 }
 
@@ -57,7 +73,11 @@ contract ReceivePayableFallback {
         number = 6;
     }
 
-    fallback() external payable{
+    fallback() external payable {
         number = 7;
+    }
+
+    function setNumber(uint256 _number) public {
+        number = _number;
     }
 }

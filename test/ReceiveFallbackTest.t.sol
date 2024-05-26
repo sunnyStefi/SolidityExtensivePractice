@@ -46,8 +46,10 @@ contract ReceiveFallbackTest is Test {
         //CALL
         (bool success,) = address(receiveContract).call("");
         assert(receiveContract.number() == 1);
+        receiveContract.setNumber(0);
         (success,) = address(receiveContract).call(abi.encodeWithSignature("nonExistingFunction()"));
-        assert(receiveContract.number() == 1);
+        assert(receiveContract.number() == 0);
+        receiveContract.setNumber(0);
         (success,) = address(receiveContract).call{value: AMOUNT}("");
         assert(receiveContract.number() == 1);
         vm.expectRevert();
@@ -69,8 +71,10 @@ contract ReceiveFallbackTest is Test {
         //CALL
         (bool success,) = address(fallbackNotPayable).call("");
         assert(fallbackNotPayable.number() == 2);
+        fallbackNotPayable.setNumber(0);
         (success,) = address(fallbackNotPayable).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(fallbackNotPayable.number() == 2);
+        fallbackNotPayable.setNumber(0);
         vm.expectRevert();
         (success,) = address(fallbackNotPayable).call{value: AMOUNT}("");
         vm.expectRevert();
@@ -94,10 +98,13 @@ contract ReceiveFallbackTest is Test {
         //CALL
         (bool success,) = address(fallbackPayable).call("");
         assert(fallbackPayable.number() == 3);
+        fallbackPayable.setNumber(0);
         (success,) = address(fallbackPayable).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(fallbackPayable.number() == 3);
+        fallbackPayable.setNumber(0);
         (success,) = address(fallbackPayable).call{value: AMOUNT}(""); //Gas used 7181
         assert(fallbackPayable.number() == 3);
+        fallbackPayable.setNumber(0);
         (success,) = address(fallbackPayable).call{value: AMOUNT}(abi.encodeWithSignature("nonExistingFunction()"));
         assert(fallbackPayable.number() == 3);
         //SEND: same as above
@@ -109,15 +116,17 @@ contract ReceiveFallbackTest is Test {
         //CALL
         (bool success,) = address(receiveNotPayableFallback).call("");
         assert(receiveNotPayableFallback.number() == 4);
+        receiveNotPayableFallback.setNumber(0);
         (success,) = address(receiveNotPayableFallback).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(receiveNotPayableFallback.number() == 5);
+        receiveNotPayableFallback.setNumber(0);
         (success,) = address(receiveNotPayableFallback).call{value: AMOUNT}("");
         assert(receiveNotPayableFallback.number() == 4);
-
+        receiveNotPayableFallback.setNumber(0);
         // the fallback cannot receive ETH: it's not called but it will not revert
+        vm.expectRevert();
         (success,) =
             address(receiveNotPayableFallback).call{value: AMOUNT}(abi.encodeWithSignature("nonExistingFunction()"));
-        assert(receiveNotPayableFallback.number() == 4);
         //SEND: same as above
         vm.stopPrank();
     }
@@ -127,11 +136,13 @@ contract ReceiveFallbackTest is Test {
         //CALL
         (bool success,) = address(receivePayableFallback).call("");
         assert(receivePayableFallback.number() == 6);
+        receivePayableFallback.setNumber(0);
         (success,) = address(receivePayableFallback).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(receivePayableFallback.number() == 7);
+        receivePayableFallback.setNumber(0);
         (success,) = address(receivePayableFallback).call{value: AMOUNT}("");
         assert(receivePayableFallback.number() == 6);
-
+        receivePayableFallback.setNumber(0);
         // fallback can receive ETH
         (success,) =
             address(receivePayableFallback).call{value: AMOUNT}(abi.encodeWithSignature("nonExistingFunction()"));
