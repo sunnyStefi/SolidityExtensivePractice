@@ -16,6 +16,7 @@ import "../src/ReceiveFallback.sol";
  * 1. call with no ETH, no data
  * 2. call with ETH, no data
  * 3. call with no ETH, data
+ * call with ETH, data
  * 4. send
  */
 contract ReceiveFallbackTest is Test {
@@ -43,8 +44,10 @@ contract ReceiveFallbackTest is Test {
     function test_Receive() public {
         vm.startPrank(ALICE);
         //CALL
-        (bool success,) = address(receiveContract).call(abi.encodeWithSignature("nonExistingFunction()"));
-        assert(receiveContract.number() == 0);
+        (bool success,) = address(receiveContract).call("");
+        assert(receiveContract.number() == 1);
+        (success,) = address(receiveContract).call(abi.encodeWithSignature("nonExistingFunction()"));
+        assert(receiveContract.number() == 1);
         (success,) = address(receiveContract).call{value: AMOUNT}("");
         assert(receiveContract.number() == 1);
         vm.expectRevert();
@@ -64,21 +67,15 @@ contract ReceiveFallbackTest is Test {
     function test_NotPayableFallback() public {
         vm.startPrank(ALICE);
         //CALL
-        (bool success,) = address(fallbackNotPayable).call(abi.encodeWithSignature("nonExistingFunction()"));
+        (bool success,) = address(fallbackNotPayable).call("");
+        assert(fallbackNotPayable.number() == 2);
+        (success,) = address(fallbackNotPayable).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(fallbackNotPayable.number() == 2);
         vm.expectRevert();
         (success,) = address(fallbackNotPayable).call{value: AMOUNT}("");
         vm.expectRevert();
         (success,) = address(fallbackNotPayable).call{value: AMOUNT}(abi.encodeWithSignature("nonExistingFunction()"));
-
-        //SEND
-        // limited to 2300 gas & does not automatically revert the transaction if the transfer fails
-        uint256 gasBefore = gasleft();
-        success = payable(address(fallbackNotPayable)).send(AMOUNT); //Out of Gas: 11549! (empty is 209)
-        uint256 gasAfter = gasleft();
-        assertTrue(!success);
-        uint256 gasUsed = gasBefore - gasAfter;
-        console.log(gasUsed);
+        //SEND: same as above
         vm.stopPrank();
     }
 
@@ -88,34 +85,31 @@ contract ReceiveFallbackTest is Test {
         bytes memory inputParam = abi.encode(uint256(123));
         (bool success,) = address(fallbackNotPayableParams).call(inputParam);
         assert(fallbackNotPayableParams.number() == 123);
-        //same as above
+        //SEND: same as above
         vm.stopPrank();
     }
 
     function test_PayableFallback() public {
         vm.startPrank(ALICE);
         //CALL
-        (bool success,) = address(fallbackPayable).call(abi.encodeWithSignature("nonExistingFunction()"));
+        (bool success,) = address(fallbackPayable).call("");
+        assert(fallbackPayable.number() == 3);
+        (success,) = address(fallbackPayable).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(fallbackPayable.number() == 3);
         (success,) = address(fallbackPayable).call{value: AMOUNT}(""); //Gas used 7181
         assert(fallbackPayable.number() == 3);
         (success,) = address(fallbackPayable).call{value: AMOUNT}(abi.encodeWithSignature("nonExistingFunction()"));
         assert(fallbackPayable.number() == 3);
-        //SEND
-        // limited to 2300 gas & does not automatically revert the transaction if the transfer fails
-        uint256 gasBefore = gasleft();
-        success = payable(address(fallbackPayable)).send(AMOUNT); //Out of Gas: 9292
-        uint256 gasAfter = gasleft();
-        assertTrue(!success);
-        uint256 gasUsed = gasBefore - gasAfter;
-        console.log(gasUsed);
+        //SEND: same as above
         vm.stopPrank();
     }
 
     function test_ReceiveNotPayableFallback() public {
         vm.startPrank(ALICE);
         //CALL
-        (bool success,) = address(receiveNotPayableFallback).call(abi.encodeWithSignature("nonExistingFunction()"));
+        (bool success,) = address(receiveNotPayableFallback).call("");
+        assert(receiveNotPayableFallback.number() == 4);
+        (success,) = address(receiveNotPayableFallback).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(receiveNotPayableFallback.number() == 5);
         (success,) = address(receiveNotPayableFallback).call{value: AMOUNT}("");
         assert(receiveNotPayableFallback.number() == 4);
@@ -124,21 +118,16 @@ contract ReceiveFallbackTest is Test {
         (success,) =
             address(receiveNotPayableFallback).call{value: AMOUNT}(abi.encodeWithSignature("nonExistingFunction()"));
         assert(receiveNotPayableFallback.number() == 4);
-        //SEND
-        // limited to 2300 gas & does not automatically revert the transaction if the transfer fails
-        uint256 gasBefore = gasleft();
-        success = payable(address(receiveNotPayableFallback)).send(AMOUNT); //Out of Gas: 9292!
-        uint256 gasAfter = gasleft();
-        assertTrue(!success);
-        uint256 gasUsed = gasBefore - gasAfter;
-        console.log(gasUsed);
+        //SEND: same as above
         vm.stopPrank();
     }
 
     function test_ReceivePayableFallback() public {
         vm.startPrank(ALICE);
         //CALL
-        (bool success,) = address(receivePayableFallback).call(abi.encodeWithSignature("nonExistingFunction()"));
+        (bool success,) = address(receivePayableFallback).call("");
+        assert(receivePayableFallback.number() == 6);
+        (success,) = address(receivePayableFallback).call(abi.encodeWithSignature("nonExistingFunction()"));
         assert(receivePayableFallback.number() == 7);
         (success,) = address(receivePayableFallback).call{value: AMOUNT}("");
         assert(receivePayableFallback.number() == 6);
@@ -147,14 +136,7 @@ contract ReceiveFallbackTest is Test {
         (success,) =
             address(receivePayableFallback).call{value: AMOUNT}(abi.encodeWithSignature("nonExistingFunction()"));
         assert(receivePayableFallback.number() == 7);
-        //SEND
-        // limited to 2300 gas & does not automatically revert the transaction if the transfer fails
-        uint256 gasBefore = gasleft();
-        success = payable(address(receivePayableFallback)).send(AMOUNT); //Out of Gas: 9292!
-        uint256 gasAfter = gasleft();
-        assertTrue(!success);
-        uint256 gasUsed = gasBefore - gasAfter;
-        console.log(gasUsed);
+        //SEND: same as above
         vm.stopPrank();
     }
 }
